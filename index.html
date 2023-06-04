@@ -1,36 +1,23 @@
 <!DOCTYPE html>
-<!--
- @license
- Copyright 2019 Google LLC. All Rights Reserved.
- SPDX-License-Identifier: Apache-2.0
--->
 <html>
-  <head>
-    <title>Places Search Box</title>
-    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+<head>
+  <title>Places Search Box</title>
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
 
-    <link rel="stylesheet" type="text/css" href="./style.css" />
-    <script type="module" src="./index.ts"></script>
-  </head>
-  <body>
-    <input
-      id="pac-input"
-      class="controls"
-      type="text"
-      placeholder="Search Box"
-    />
-    <div id="map"></div>
-
-    <!-- 
-      The `defer` attribute causes the callback to execute after the full HTML
-      document has been parsed. For non-blocking uses, avoiding race conditions,
-      and consistent behavior across browsers, consider loading using Promises.
-      See https://developers.google.com/maps/documentation/javascript/load-maps-js-api
-      for more information.
-      -->
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places&v=weekly"
-      defer
-    ></script>
-  </body>
+  <link rel="stylesheet" type="text/css" href="./style.css" />
+  <script type="module" src="./index.ts"></script>
+  <script type="module" src="./getPoints.ts"></script>
+</head>
+<body>
+<div id="floating-panel">
+  <button id="toggle-button" onclick="toggleTraffic()">Toggle Traffic Layer</button>
+  <input id="pac-input" class="controls" type="text" placeholder="Search Box" />
+</div>
+<div id="map"></div>
+<script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places&v=daily"
+        defer
+></script>
+</body>
 </html>
+

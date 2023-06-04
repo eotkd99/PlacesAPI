@@ -1,43 +1,28 @@
-/**
- * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
 // @ts-nocheck TODO remove when fixed
-
-// This example adds a search box to a map, using the Google Place Autocomplete
-// feature. People can enter geographical searches. The search box will return a
-// pick list containing a mix of places and predicted search terms.
-
-// This example requires the Places library. Include the libraries=places
-// parameter when you first load the API. For example:
-// <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+import { getPoints } from './getPoints';
+let map: google.maps.Map;
+let heatmap;
 
 function initAutocomplete() {
-  const map = new google.maps.Map(
-    document.getElementById("map") as HTMLElement,
-    {
-      center: { lat: -33.8688, lng: 151.2195 },
-      zoom: 13,
-      mapTypeId: "roadmap",
-    }
+  map = new google.maps.Map(
+      document.getElementById("map") as HTMLElement,
+      {
+        center: { lat: 35.1796, lng: 129.0756 },
+        zoom: 10,
+        mapTypeId: "roadmap",
+      }
   );
 
-  // Create the search box and link it to the UI element.
   const input = document.getElementById("pac-input") as HTMLInputElement;
   const searchBox = new google.maps.places.SearchBox(input);
-
   map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
 
-  // Bias the SearchBox results towards current map's viewport.
   map.addListener("bounds_changed", () => {
     searchBox.setBounds(map.getBounds() as google.maps.LatLngBounds);
   });
 
   let markers: google.maps.Marker[] = [];
 
-  // Listen for the event fired when the user selects a prediction and retrieve
-  // more details for that place.
   searchBox.addListener("places_changed", () => {
     const places = searchBox.getPlaces();
 
@@ -68,18 +53,16 @@ function initAutocomplete() {
         scaledSize: new google.maps.Size(25, 25),
       };
 
-      // Create a marker for each place.
       markers.push(
-        new google.maps.Marker({
-          map,
-          icon,
-          title: place.name,
-          position: place.geometry.location,
-        })
+          new google.maps.Marker({
+            map,
+            icon,
+            title: place.name,
+            position: place.geometry.location,
+          })
       );
 
       if (place.geometry.viewport) {
-        // Only geocodes have viewport.
         bounds.union(place.geometry.viewport);
       } else {
         bounds.extend(place.geometry.location);
@@ -87,12 +70,34 @@ function initAutocomplete() {
     });
     map.fitBounds(bounds);
   });
+
+  //트래픽 레이어 설정
+  const trafficLayer = new google.maps.TrafficLayer();
+
+  trafficLayer.setMap(map);
+
+  let toggleTrafficLayer = false;
+
+  function toggleTraffic() {
+    if (toggleTrafficLayer) {
+      trafficLayer.setMap(null);
+      toggleTrafficLayer = false;
+    } else {
+      trafficLayer.setMap(map);
+      toggleTrafficLayer = true;
+    }
+  }
+  window.toggleTraffic = toggleTraffic;
+
 }
+
 
 declare global {
   interface Window {
     initAutocomplete: () => void;
+    toggleTraffic: () => void;
   }
 }
+
 window.initAutocomplete = initAutocomplete;
 export {};
