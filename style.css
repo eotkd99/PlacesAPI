@@ -1,18 +1,13 @@
-/**
- * @license
- * Copyright 2019 Google LLC. All Rights Reserved.
- * SPDX-License-Identifier: Apache-2.0
- */
-/* 
+/*
  * Always set the map height explicitly to define the size of the div element
- * that contains the map. 
+ * that contains the map.
  */
 #map {
   height: 100%;
 }
 
-/* 
- * Optional: Makes the sample page fill the window. 
+/*
+ * Optional: Makes the sample page fill the window.
  */
 html,
 body {
@@ -69,15 +64,16 @@ body {
 }
 
 #pac-input {
+  position: fixed;
   background-color: #fff;
   font-family: Roboto;
   font-size: 15px;
-  font-weight: 300;
-  margin-left: 12px;
-  margin-top: 15px;
-  padding: 5px 11px 5px 13px;
+  top: 2%;
+  left: 20%;
   text-overflow: ellipsis;
-  width: 400px;
+  width: 18%;
+  height: 3%;
+  z-index: 9999;
 }
 
 #pac-input:focus {
