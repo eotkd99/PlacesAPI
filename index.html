@@ -3,26 +3,27 @@
 <head>
   <title>Places Search Box</title>
   <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
-
   <link rel="stylesheet" type="text/css" href="./style.css" />
   <script type="module" src="./index.ts"></script>
-  <script type="module" src="./getPoints.ts"></script>
 </head>
 <body>
-
-<div id="floating-panel">
-  <button id="toggle-button" onclick="toggleTraffic()">Toggle Traffic Layer</button>
-  <button onclick="toggleWebGL()">Toggle WebGL</button>
-</div>
-<input
+  <input
         id="pac-input"
         class="controls"
         type="text"
         placeholder="Search Box"
-/>
-<div id="map"></div>
+  />
+  <div id="floating-panel">
+    <div class="toggle-button">
+      <button onclick="toggleTraffic()">Toggle Traffic Layer</button>
+      <button onclick="toggleWebGL()">Toggle WebGL</button>
+      <button onclick="toggleTransitLayer()">Toggle Transit</button>
+      <button onclick="toggleBicycling()">Toggle Bicycling</button>
+    </div>
+  </div>
+  <div id="map"></div>
 <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places&v=daily"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places&v=weekly"
         defer
 ></script>
 </body>
