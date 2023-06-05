@@ -2,6 +2,8 @@
 import { Loader } from '@googlemaps/js-api-loader';
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { GoogleMapsOverlay } from "@deck.gl/google-maps";
+import { TripsLayer } from "deck.gl";
 
 let map: google.maps.Map;
 let webGLOverlayView;
@@ -12,12 +14,43 @@ const defaultLatitude = 0;
 const defaultLongitude = 0;
 const latitude = storedLatitude !== null ? parseFloat(storedLatitude) : defaultLatitude;
 const longitude = storedLongitude !== null ? parseFloat(storedLongitude) : defaultLongitude;
-let trafficLayer: google.maps.TransitLayer;
+let trafficLayer: google.maps.TrafficLayer;
 let isTrafficLayerVisible = false;
 let transitLayer: google.maps.TransitLayer;
 let isTransitLayerVisible = false;
 let bicyclingLayer: google.maps.BicyclingLayer;
 let isBicyclingLayerVisible = false;
+
+let animateOverlay ;
+let isAnimateOverlayVisible = false;
+let animateRequestID;
+const GoogleMapsOverlay = deck.GoogleMapsOverlay;
+let TripsLayer = deck.TripsLayer;
+const DATA_URL = "https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json";
+const LOOP_LENGTH = 1800;
+const VENDOR_COLORS = [
+  [255, 0, 0], // vendor #0
+  [0, 0, 255], // vendor #1
+];
+let currentTime = 0;
+let props = {
+  id: "trips",
+  data: DATA_URL,
+  getPath: (d: Data) => d.path,
+  getTimestamps: (d: Data) => d.timestamps,
+  getColor: (d: Data) => VENDOR_COLORS[d.vendor],
+  opacity: 1,
+  widthMinPixels: 2,
+  trailLength: 180,
+  currentTime: 0,
+  shadowEnabled: true,
+};
+
+interface Data {
+  vendor: number;
+  path: [number, number][];
+  timestamps: number[];
+}
 
 const apiOptions = {
   apiKey: 'AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI',
@@ -116,15 +149,14 @@ function initWebGLOverlayView(map) {
   }
 }
 
-
 function initAutocomplete() {
   map = new google.maps.Map(document.getElementById("map") as HTMLElement, {
-        center: { lat: 35.1796, lng: 129.0756 },
+        center: { lat: 40.7246, lng: -74.0006793 },
         zoom: 10,
         mapTypeId: "roadmap",
+        mapId: '5ad462e9fa6ea70e',
       }
   );
-
   const input = document.getElementById("pac-input") as HTMLInputElement;
   const searchBox = new google.maps.places.SearchBox(input);
   let markers: google.maps.Marker[] = [];
@@ -235,16 +267,36 @@ function initAutocomplete() {
     }
   }
   window.toggleBicycling = toggleBicycling;
+
+  function Animate() {
+    if (!animateOverlay) {
+      animateOverlay = new GoogleMapsOverlay({});
+    }
+    if (isAnimateOverlayVisible) {
+      map.setTilt(0);
+      animateOverlay.setMap(map);
+      cancelAnimationFrame(animateRequestID);
+      currentTime = 0;
+      isAnimateOverlayVisible = false;
+    } else {
+      map.setTilt(45);
+      animateOverlay.setMap(map);
+      let animate = () => {
+        currentTime = (currentTime + 1) % LOOP_LENGTH;
+        let tripsLayer = new TripsLayer({
+          ...props, currentTime,
+        });
+        animateOverlay.setProps({
+          layers: [tripsLayer],
+        });
+        animateRequestID = window.requestAnimationFrame(animate);
+      };
+      window.requestAnimationFrame(animate);
+      isAnimateOverlayVisible = true;
+    }
+  }
+  window.Animate = Animate;
 }
 
-declare global {
-  interface Window {
-    initAutocomplete: () => void;
-    toggleTraffic: () => void;
-    toggleWebGL: () => void;
-    toggleTransitLayer: () => void;
-    toggleBicycling: () => void;
-  }
-}
 window.initAutocomplete = initAutocomplete;
 export {};

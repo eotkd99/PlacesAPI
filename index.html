@@ -2,7 +2,11 @@
 <html>
 <head>
   <title>Places Search Box</title>
-  <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=default"></script>
+    <script src="https://unpkg.com/deck.gl@8.7.3/dist.min.js"></script>
+    <script src="https://unpkg.com/@deck.gl/google-maps@8.7.3/dist.min.js"></script>
+
+
   <link rel="stylesheet" type="text/css" href="./style.css" />
   <script type="module" src="./index.ts"></script>
 </head>
@@ -13,13 +17,12 @@
         type="text"
         placeholder="Search Box"
   />
-  <div id="floating-panel">
-    <div class="toggle-button">
-      <button onclick="toggleTraffic()">Toggle Traffic Layer</button>
-      <button onclick="toggleWebGL()">Toggle WebGL</button>
-      <button onclick="toggleTransitLayer()">Toggle Transit</button>
-      <button onclick="toggleBicycling()">Toggle Bicycling</button>
-    </div>
+  <div class="floating-panel">
+      <button onclick="toggleTraffic()">Traffic Layer</button>
+      <button onclick="toggleWebGL()">TWebGL</button>
+      <button onclick="toggleTransitLayer()">Transit</button>
+      <button onclick="toggleBicycling()">Bicycling</button>
+      <button onclick="Animate()">ToggleAnimate</button>
   </div>
   <div id="map"></div>
 <script
