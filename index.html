@@ -18,15 +18,19 @@
         placeholder="Search Box"
   />
   <div class="floating-panel">
+      <button onclick="mapReset()">Map Reset</button>
       <button onclick="toggleTraffic()">Traffic Layer</button>
       <button onclick="toggleWebGL()">TWebGL</button>
       <button onclick="toggleTransitLayer()">Transit</button>
       <button onclick="toggleBicycling()">Bicycling</button>
-      <button onclick="Animate()">ToggleAnimate</button>
+      <button onclick="Animate()">Toggle Animate</button>
+      <button onclick="Panorama()">Toggle Panorama</button>
+      <button onclick="toggleDraw()">Toggle toggleDraw</button>
   </div>
   <div id="map"></div>
+  <div id="pano"></div>
 <script
-        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places&v=weekly"
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD6AUm1Y6hvKr3tSgSjzkpr9UK0wuCL5iI&callback=initAutocomplete&libraries=places,drawing&v=weekly"
         defer
 ></script>
 </body>
