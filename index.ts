@@ -23,9 +23,9 @@ let isBicyclingLayerVisible = false;
 let isPanoLayerVisible = false;
 let isSplitVisible=false;
 let isDrawVisible=false;
-let latestOverlay=null;
 let latestOverlayList=[];
-
+let circleOverlayList=[];
+let circles=[];
 let animateOverlay ;
 let isAnimateOverlayVisible = false;
 let animateRequestID;
@@ -367,7 +367,7 @@ function initAutocomplete() {
   let polygons = [];
   let polylines = [];
   let rectangles = [];
-  let circles = [];
+
 
   drawingManager = new google.maps.drawing.DrawingManager({
     drawingMode: google.maps.drawing.OverlayType.MARKER,
@@ -415,8 +415,9 @@ function initAutocomplete() {
         rectangles.push(overlay);
         break;
       case google.maps.drawing.OverlayType.CIRCLE:
-        circles.push(overlay);
         overlay.setOptions({ editable: false });
+        circles.push(overlay)
+        circleOverlayList.push(overlay);
         break;
       default:
         break;
@@ -425,6 +426,20 @@ function initAutocomplete() {
       latestOverlayList.push(overlay);
       overlay.setOptions({ editable: true });
     });
+  });
+  google.maps.event.addListener(map, 'click', function(event) {
+
+    for (let i = 0; i < circleOverlayList.length; i++) {
+      let circle = circleOverlayList[i];
+      let radius = circle.getRadius();
+      let center = circle.getCenter();
+
+      let distance = google.maps.geometry.spherical.computeDistanceBetween(event.latLng, center);
+
+      if (distance <= radius) {
+        circleOverlayList[i].setOptions({ editable: true });
+      }
+    }
   });
   drawingManager.setMap(map);
   function toggleDraw() {
@@ -442,6 +457,7 @@ function initAutocomplete() {
 document.addEventListener('keydown', function(event) {
   let element;
   if (event.key === 'Delete' && latestOverlayList.length > 0) {
+
     for (element of latestOverlayList) {
       let overlayType = element.type;
       switch (overlayType) {
@@ -457,14 +473,19 @@ document.addEventListener('keydown', function(event) {
         case google.maps.drawing.OverlayType.RECTANGLE:
           rectangles.splice(rectangles.indexOf(element), 1);
           break;
-        case google.maps.drawing.OverlayType.CIRCLE:
-          circles.splice(circles.indexOf(element), 1);
-          break;
         default:
           break;
       }
       element.setMap(null);
       element=null;
+    }
+  } else if (event.key === 'Delete' && circleOverlayList.length > 0) {
+    for (element of circleOverlayList) {
+      if(element.editable==true) {
+        circles.splice(circles.indexOf(element), 1);
+        element.setMap(null);
+        element = null;
+      }
     }
   }
 });
