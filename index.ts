@@ -29,10 +29,11 @@ let circles=[];
 let animateOverlay ;
 let isAnimateOverlayVisible = false;
 let animateRequestID;
+let listener;
 const GoogleMapsOverlay = deck.GoogleMapsOverlay;
 let TripsLayer = deck.TripsLayer;
 const DATA_URL = "https://raw.githubusercontent.com/visgl/deck.gl-data/master/examples/trips/trips-v7.json";
-const LOOP_LENGTH = 1800;
+const LOOP_LENGTH = 3600;
 const VENDOR_COLORS = [
   [255, 0, 0], // vendor #0
   [0, 0, 255], // vendor #1
@@ -44,15 +45,14 @@ let props = {
   getPath: (d: Data) => d.path,
   getTimestamps: (d: Data) => d.timestamps,
   getColor: (d: Data) => VENDOR_COLORS[d.vendor],
-  opacity: 1,
-  widthMinPixels: 2,
-  trailLength: 180,
+  opacity: 5,
+  widthMinPixels: 3,
+  trailLength: 360,
   currentTime: 0,
   shadowEnabled: true,
 };
 let panorama;
 let mapLeft, mapRight;
-
 
 interface Data {
   vendor: number;
@@ -84,7 +84,6 @@ function initWebGLOverlayView(map) {
   webGLOverlayView = new google.maps.WebGLOverlayView();
   let scene, renderer, camera, loader;
   webGLOverlayView.onAdd = () => {
-    // set up the scene
     scene = new THREE.Scene();
     camera = new THREE.PerspectiveCamera();
     const ambientLight = new THREE.AmbientLight( 0xffffff, 0.75 ); // soft white light
@@ -93,7 +92,6 @@ function initWebGLOverlayView(map) {
     directionalLight.position.set(0.5, -1, 0.5);
     scene.add(directionalLight);
 
-    // load the model
     loader = new GLTFLoader();
     const source = "pin.gltf";
     loader.load(
@@ -119,7 +117,6 @@ function initWebGLOverlayView(map) {
       camera = null;
       loader = null;
     };
-    // wait to move the camera until the 3D model loads
     loader.manager.onLoad = () => {
       renderer.setAnimationLoop(() => {
         map.moveCamera({
@@ -128,11 +125,10 @@ function initWebGLOverlayView(map) {
           "zoom": mapOptions.zoom
         });
 
-        // rotate the map 360 degrees
         if (mapOptions.tilt < 67.5) {
           mapOptions.tilt += 2
         } else if (mapOptions.heading <= 360) {
-          mapOptions.heading += 3;
+          mapOptions.heading += 2;
         } else {
           renderer.setAnimationLoop(null)
         }
@@ -229,7 +225,6 @@ function initAutocomplete() {
   }
   function toggleWebGL() {
     if (localStorage.getItem('webToggle')==1) {
-      // webToggle 값을 로컬 스토리지에 저장
       localStorage.setItem('webToggle', 0);
       location.reload();
     } else {
@@ -282,7 +277,7 @@ function initAutocomplete() {
   }
   window.toggleBicycling = toggleBicycling;
 
-  function Animate() {
+  function toggleAnimate() {
     if (!animateOverlay) {
       animateOverlay = new GoogleMapsOverlay({});
     }
@@ -309,13 +304,20 @@ function initAutocomplete() {
       isAnimateOverlayVisible = true;
     }
   }
-  window.Animate = Animate;
+  window.toggleAnimate = toggleAnimate;
 
-  function Panorama(): void {
+  function togglePanorama(): void {
     let mapElement: HTMLElement = document.getElementById("map")!;
     let panoElement: HTMLElement = document.getElementById("pano")!;
 
     if (isPanoLayerVisible) {
+      listener=map.addListener("click", (event) => {
+        sv.getPanorama({ location: event.latLng, radius: 50 })
+            .then(processSVData)
+            .catch((e) =>
+                console.error("Street View data not found for this location.")
+            );
+      });
       mapElement.style.width = "50%";
       mapElement.style.height = "100%";
       mapElement.style.float = "left";
@@ -335,9 +337,11 @@ function initAutocomplete() {
       panoElement.style.float = "";
       panoElement.classList.remove("hidden");
       isPanoLayerVisible = true;
+      google.maps.event.removeListener(listener);
     }
+    console.log(listener);
   }
-  window.Panorama = Panorama;
+  window.togglePanorama = togglePanorama;
 
   function mapReset(): void {
     location.reload();
@@ -441,7 +445,7 @@ function initAutocomplete() {
       }
     }
   });
-  drawingManager.setMap(map);
+
   function toggleDraw() {
     if (isDrawVisible) {
       drawingManager.setMap(map)
@@ -523,7 +527,6 @@ function splitMapInit(){
     streetViewControl: false,
   };
 
-  // instantiate the map on the left with control positioning
   mapLeft = new google.maps.Map(document.getElementById("map-left"), {
     ...mapOptions,
     mapTypeId: "satellite",
@@ -538,7 +541,6 @@ function splitMapInit(){
       position: google.maps.ControlPosition.LEFT_BOTTOM,
     },
   });
-  // instantiate the map on the right with control positioning
   mapRight = new google.maps.Map(document.getElementById("map-right"), {
     ...mapOptions,
     fullscreenControlOptions: {
@@ -552,7 +554,6 @@ function splitMapInit(){
     },
   });
 
-  // helper function to keep maps in sync
   function sync(...maps) {
     let center, zoom;
 
@@ -565,7 +566,6 @@ function splitMapInit(){
         m.setZoom(zoom);
       });
     }
-
     maps.forEach((m) => {
       m.addListener("bounds_changed", () => {
         const changedCenter = m.getCenter();
@@ -579,7 +579,6 @@ function splitMapInit(){
       });
     });
   }
-
   sync(mapLeft, mapRight);
 
   function handleContainerResize() {
@@ -589,11 +588,8 @@ function splitMapInit(){
     document.getElementById("map-right").style.width = `${width}px`;
   }
 
-  // trigger to set map container size since using absolute
   handleContainerResize();
-  // add event listener
   window.addEventListener("resize", handleContainerResize);
-  //@ts-ignore
   Split(["#left", "#right"], {
     sizes: [50, 50],
   });
